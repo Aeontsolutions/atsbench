@@ -32,3 +32,8 @@ def test_render_json_roundtrips_fields():
     assert data["rows"][0]["model"] == "cheap"
     assert data["rows"][0]["passed_gate"] is True
     assert data["rows"][0]["rank"] == 1
+    assert set(data["rows"][0].keys()) == {
+        "model", "accuracy", "latency_p50_s", "latency_p95_s",
+        "cost_per_sample_usd", "n_samples", "n_errors",
+        "passed_gate", "is_pareto", "rank",
+    }

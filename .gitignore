@@ -19,6 +19,7 @@ logs/
 # Local fixture caches / scratch
 .cache/
 scratch/
+out.json
 
 # Subagent-driven-development scratch (progress ledger, briefs, diffs)
 .superpowers/
