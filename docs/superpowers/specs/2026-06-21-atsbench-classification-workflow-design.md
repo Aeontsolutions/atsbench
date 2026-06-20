@@ -18,7 +18,8 @@ So classification is the first real slice: objective, ground-truth-backed from c
 1. **Workflow:** document classification (promoted ahead of extraction).
 2. **Ground truth:** derived from the committed filenames — fields `is_financial`, `document_type`, `company`, `symbol`, `year`, `audited`.
 3. **Frozen model input:** extracted text of the **first ~3 pages** of each PDF (universal across text models, cheap, deterministic; classification signal lives on the cover pages). Every model sees identical frozen text.
-4. **`document_type` taxonomy (5 canonical classes)**, from the team's sampling config: `audited_financial_statements`, `unaudited_financial_statements`, `annual_report`, `prospectus`, `other`.
+4. **`document_type` = the production model's 29-value enum** (harvested verbatim from `CLASSIFICATION_SYSTEM_PROMPT`): `audited_financial_statements`, `unaudited_financial_statements`, `annual_report`, `prospectus`, `general_meetings`, `other_company_news`, `acquisitions_mergers_and_disposals`, `management_appointments_resignations_and_retirements`, `jse_event_news`, `director_appointments_resignations_and_retirements`, `trading_in_shares`, `dividend_declaration`, `nav`, `bulletin`, `takeover_bids_and_scheme_of_arrangements`, `dividend_consideration`, `rights_issue`, `jse_education_news`, `jse_trading_news`, `jse_monthly_regulatory_report`, `basis_of_allotment`, `disclosure_of_shareholders`, `committee_news`, `performance_report`, `corporate_governance_policy_and_guidelines`, `share_buy_back`, `stock_split`, `articles`, `directors_circular`, `delisting_notice`. (My earlier "5 classes" was the sampling config, not the label space — corrected.) Golden labels map each filename's type-token into this enum: **mostly identity**, with special cases `quarterly_financial_statements`→`unaudited_financial_statements`, bare `unaudited`→`unaudited_financial_statements`, `weekly_bulletin`→`bulletin`, `*_errata`→base type.
+4b. **`is_financial` and `audited` are derived per the production prompt's explicit rule** (verbatim, not guessed): `is_financial = true` **only** for standalone financial statements — i.e. `document_type ∈ {audited_financial_statements, unaudited_financial_statements}`. `annual_report`, `prospectus`, and every news/other type are `is_financial = false` ("contain financials but are not financial statements"). `audited = true` for `audited_financial_statements`, `false` for unaudited/quarterly statements, `null` for non-FS docs (scored only where the golden value is non-null).
 5. **Scorer mirrors `calculate_metrics.py`** per field (see Scoring).
 6. **Headline accuracy = macro mean of per-field accuracy** (gate uses this); scorecard also shows **exact-record** accuracy and the per-field breakdown.
 7. **Corpus is published JSE filings (public)** — low data-sensitivity; the trusted/exclude-sensitive gate barely binds, but fixtures still carry a sensitivity tag.
@@ -45,14 +46,14 @@ workflows.yaml          # add a `classification` workflow + gate
 `build_fixtures.py` reads the 99 PDFs from a local checkout of `jse-doc-workflows/golden_dataset_documents/` and for each:
 
 1. **Parse the filename → golden labels** via `filename_labels.parse_filename(name)`. Pattern is roughly `{company}-{SYMBOL}-{document_type}_{date}` with `_`/`-` separator drift, leading underscores, `(formerly X)` parentheticals, and `&` in names. Unparseable filenames are **flagged and excluded with a logged reason — never silently mislabeled.**
-2. **Extract first ~3 pages of text** (pypdf/pdfplumber), normalized whitespace, as the frozen `input_text`.
+2. **Extract the first ~3 pages of text with `pypdf`**, matching the team's `DocumentHandler.extract_text_from_pdf` format (`--- Page {n} ---\n{page_text}`, blank line between pages, empty pages skipped), as the frozen `input_text`.
 3. Emit a record: `{id, input_text, golden:{is_financial, document_type, company, symbol, year, audited}, source_filename, sensitivity:"public"}`.
 
 Output: `dataset.jsonl` (text + labels — small, committed) and `MANIFEST.md` (counts, any excluded files, content hashes). The **PDFs are not committed** — they are fetched once locally for prep.
 
 ### Task + scorer
 
-- `tasks/classification.py` — loads `dataset.jsonl` as Inspect `Sample`s (`input=input_text`, `metadata=golden`), solver applies the **verbatim production classification prompt** (harvested from the repo during build), single generation; the model returns its classification JSON.
+- `tasks/classification.py` — loads `dataset.jsonl` as Inspect `Sample`s (`input=input_text`, `metadata=golden`), solver applies the **harvested production prompt**: the Gemini `CLASSIFICATION_SYSTEM_PROMPT` (closed 29-value enum) as the system message + the production **text-path** user turn (`Please analyze and classify this document named "{filename}".\n\nDocument content:\n{text}`). The production system already has this text path, so we stay faithful rather than inventing. The system prompt interpolates the **official JSE symbol reference list** (`get_symbol_reference()`), harvested and included so symbol classification is fair. Single generation; parse the model's JSON.
 - `scorers/classification.py` — pure per-field comparison, then a thin `@scorer` adapter (the slice-① template). Inspect dict-valued `Score` with per-field metrics + the headline.
 
 ## Scoring (mirrors `calculate_metrics.py`)
@@ -63,7 +64,7 @@ Per field, per document:
 |---|---|
 | `is_financial` | boolean exact |
 | `audited` | boolean exact |
-| `document_type` | canonical exact (after mapping to the 5 classes) |
+| `document_type` | exact string equality, no normalization (golden mapped into the 29-value enum) |
 | `company` | normalized exact — uppercase, `&`→`AND`, strip all punctuation, collapse whitespace, trim |
 | `symbol` | case-insensitive exact |
 | `year` | string exact (`str(gt) == str(pred)`) |
@@ -89,12 +90,13 @@ Per field, per document:
 ## One-time build dependencies (resolved during planning/build, grounded in the repo — not guessed)
 
 - Fetch the 99 PDFs once: a shallow/sparse checkout of `jse-doc-workflows` `golden_dataset_documents/` (≈ hundreds of MB; local only, not committed).
-- Harvest from the repo: the **verbatim classification prompt**, the model's **allowed `document_type` values**, and the team's **`is_financial` definition** (e.g. whether `prospectus`/`annual_report` count as financial). The filename-token → canonical-type map is finalized against these.
+- Already harvested (verbatim, 2026-06-21): the Gemini `CLASSIFICATION_SYSTEM_PROMPT` + text-path user turn, the 29-value `document_type` enum, the `is_financial`/`audited` rules, `normalize_company_name` and the per-field comparison code, and `DocumentHandler.extract_text_from_pdf`. Still to fetch once: `get_symbol_reference()` (the JSE symbol list) for the system prompt.
 
-## Open items (pinned at build time)
+## Open items
 
-- Exact `is_financial` definition per the harvested prompt (does `prospectus` or a bare `annual_report` count?).
-- The filename-token → canonical-`document_type` map (enumerated from the actual 99 filenames).
-- Verbatim production classification prompt text.
+_Resolved by the 2026-06-21 build-fact harvest:_ the `is_financial` rule (FS-only; `annual_report` & `prospectus` = false), the 29-value `document_type` enum + filename→enum map, the verbatim prompt, the scoring code, and the `pypdf` extraction format.
+
+Remaining:
+- Fetch `get_symbol_reference()` output (official JSE symbol list) for the system prompt — one-time build fetch.
 - Number of pages to freeze (default 3; confirm signal coverage on a sample).
 - Tier-2 fields await the S3 `golden_evaluation_dataset.json`.
