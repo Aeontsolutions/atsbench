@@ -1,0 +1,18 @@
+# The registry you edit to add a model. provider = Inspect model string.
+# OpenAI-compatible endpoints: openai-api/<vendor>/<model> + <VENDOR>_API_KEY and <VENDOR>_BASE_URL env vars.
+models:
+  - name: gemini-2.5-pro          # current incumbent — benchmarked first to set the baseline
+    provider: google/gemini-2.5-pro
+    price_per_1m_input: 1.25
+    price_per_1m_output: 10.0
+    trusted: true
+  - name: glm-5.2
+    provider: openai-api/zhipu/glm-5.2
+    price_per_1m_input: 0.60
+    price_per_1m_output: 2.20
+    trusted: false                # external — keep sensitive fixtures away from it
+  - name: mock                    # zero-cost smoke/CI model
+    provider: mockllm/model
+    price_per_1m_input: 0.0
+    price_per_1m_output: 0.0
+    trusted: true

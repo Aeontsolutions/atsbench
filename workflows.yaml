@@ -1,0 +1,5 @@
+workflows:
+  - name: smoke                   # the slice-① example workflow
+    gate:
+      min_accuracy: 0.5
+      primary_axis: cost
