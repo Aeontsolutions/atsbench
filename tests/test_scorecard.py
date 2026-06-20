@@ -56,7 +56,8 @@ def test_build_scorecard_orders_passers_by_primary_axis():
 
 
 def test_passes_gate_boundary_equal_passes():
-    # comparisons are strict (>), so values exactly at the budgets/floor PASS
+    # gate disqualifies with strict comparisons (accuracy < floor, metric > budget),
+    # so values exactly at the floor/budget PASS
     gate = WorkflowGate(min_accuracy=0.9, max_latency_s=3.0, max_cost_per_sample_usd=0.02)
     assert passes_gate(_m("exact", 0.9, 1.0, 3.0, 0.02), gate) is True
 
