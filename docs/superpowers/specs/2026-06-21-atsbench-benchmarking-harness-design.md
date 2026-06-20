@@ -17,7 +17,8 @@ current incumbents (mostly Google Gemini today).
 - Evaluate any new model on demand with minimal effort ("add a model = one config line").
 - Cover the four workflows that represent what we need LLMs for.
 - Produce trustworthy, reproducible, comparable scores — not vibes.
-- Report accuracy **and** cost **and** latency, since model selection is a trade-off.
+- Score every model on three co-equal axes — **accurate, fast, affordable** — and
+  resolve them into a clear per-workflow verdict (gate + ranked scorecard).
 - Keep sensitive regulatory filings under data-governance control.
 
 ## Non-Goals
@@ -59,6 +60,7 @@ src/atsbench/
   cli.py                # atsbench run --task X --model Y | compare --models a,b,c | report
 fixtures/               # frozen inputs + golden outputs, content-hashed in MANIFEST.md (provenance + sensitivity)
 models.yaml             # the registry edited to add new models (e.g. GLM 5.2)
+workflows.yaml          # per-workflow gates: accuracy floor + max latency/$ budgets + primary axis
 tests/                  # scorer unit tests + mock provider for zero-cost end-to-end CI
 ```
 
@@ -73,8 +75,10 @@ tests/                  # scorer unit tests + mock provider for zero-cost end-to
   the core.
 - **scorers/** — the part most likely to be subtly wrong, so it is unit-tested
   first (TDD). Pure functions over (model output, gold) → score + metadata.
-- **report/** — reads Inspect's structured `.eval` logs across models and renders
-  a leaderboard (markdown + JSON); Inspect View provides per-sample drill-down.
+- **report/** — reads Inspect's structured `.eval` logs across models, applies each
+  workflow's gate, ranks survivors by the primary axis, and renders a three-axis
+  scorecard with the Pareto set highlighted (markdown + JSON); Inspect View provides
+  per-sample drill-down.
 - **cli.py** — thin wrapper: `run`, `compare`, `report`.
 
 ### Data flow (per run)
@@ -96,12 +100,32 @@ tests/                  # scorer unit tests + mock provider for zero-cost end-to
 | Text-to-SQL | `sql_exec_match` — execute candidate SQL on a local **DuckDB** fixture, compare result sets order-insensitively (type-normalized); error/empty → fail | result-set exact-match rate |
 | RAG Q&A | `judge` — neutral LLM-as-judge with a rubric (faithfulness-to-context, correctness-vs-reference, completeness); judge model **fixed and excluded from the candidate pool**; low-confidence / judge-vs-reference disagreement auto-flagged to a review queue | rubric score + flagged-for-review count |
 
-### Cross-cutting metrics (every task)
+### The three scoring axes (co-equal)
 
-Latency p50/p95, input/output tokens, **$ cost** (from registry pricing),
-**$/correct**, format-failure rate, refusal rate. The deliverable answer for "what
-about GLM 5.2" is the accuracy-vs-cost-vs-latency trade-off against the Gemini
-incumbent, not a single number.
+Every workflow scores a model on three co-equal axes — not accuracy with footnotes:
+
+- **Accurate** — the task scorer above (field-F1 / macro-F1 / result-set match /
+  judge rubric), plus JSON-validity, format-failure, and refusal rates.
+- **Fast** — latency per sample, reported p50/p95.
+- **Affordable** — $ cost per sample (from registry pricing), plus $/correct.
+
+### Verdict — gates + ranked scorecard
+
+Each workflow declares a **gate** and a **primary axis**:
+
+- **Gate** — a minimum accuracy floor plus optional max-latency and max-$ budgets.
+  A model that fails the gate is disqualified for that workflow, so a cheap-but-wrong
+  or slow-but-right model cannot win on a technicality.
+- **Rank** — models that clear the gate are ranked by the workflow's primary axis
+  (e.g. cost) in a three-axis scorecard.
+- **Pareto highlight** — the non-dominated set (models you can't make more accurate,
+  faster, or cheaper without giving up another axis) is flagged, so the trade-off
+  stays visible after ranking.
+
+Gates are **per-workflow**: a real-time chatbot's latency budget is not a batch
+extractor's. Budgets are **anchored to the incumbent** — the current Gemini model is
+benchmarked first to set the baseline that "fast" and "affordable" are measured
+against, so the thresholds are concrete rather than arbitrary.
 
 ## Data Governance
 
@@ -158,4 +182,6 @@ which provider (data-egress audit trail).
 - `git init` this directory (currently not a repo) — done as part of spec commit.
 - Text-to-SQL fixture (schema snapshot + question set + expected rows) — needs
   Elroy's input during slice ⑤.
+- Per-workflow gate values (accuracy floor, latency/$ budgets, primary axis) — set
+  with Elroy after the incumbent Gemini baseline run in slice ②.
 ```
