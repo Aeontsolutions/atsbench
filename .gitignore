@@ -1,0 +1,21 @@
+# Secrets — never commit API keys (BYO-keys model)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Inspect AI eval logs (large; regenerated per run)
+logs/
+*.eval
+
+# Local fixture caches / scratch
+.cache/
+scratch/
