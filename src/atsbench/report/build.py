@@ -42,7 +42,7 @@ def build_scorecard_for_logs(
             model=model,
             workflow=workflow.name,
             accuracy=accuracy_from_log(log),
-            samples=samples_from_log(log),
+            samples=samples_from_log(log, log.eval.model),
             spec=spec,
         )
         rows.append(rm)

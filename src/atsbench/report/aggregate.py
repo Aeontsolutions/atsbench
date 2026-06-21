@@ -37,23 +37,17 @@ def aggregate_run(
     )
 
 
-def samples_from_log(log) -> list[SampleObs]:
-    """Walk an Inspect EvalLog into SampleObs. Token usage is summed across any
-    models the sample touched; latency uses working_time, falling back to total_time."""
+def samples_from_log(log, candidate_model: str) -> list[SampleObs]:
+    """Walk an Inspect EvalLog into SampleObs, counting ONLY the candidate model's
+    tokens (a model-graded scorer's judge calls also land in sample.model_usage)."""
     obs: list[SampleObs] = []
     for sample in log.samples or []:
         usage = sample.model_usage or {}
-        input_tokens = sum(u.input_tokens for u in usage.values())
-        output_tokens = sum(u.output_tokens for u in usage.values())
+        input_tokens = sum(u.input_tokens for k, u in usage.items() if k == candidate_model)
+        output_tokens = sum(u.output_tokens for k, u in usage.items() if k == candidate_model)
         latency = sample.working_time or sample.total_time or 0.0
-        obs.append(
-            SampleObs(
-                latency_s=float(latency),
-                input_tokens=int(input_tokens),
-                output_tokens=int(output_tokens),
-                errored=sample.error is not None,
-            )
-        )
+        obs.append(SampleObs(latency_s=float(latency), input_tokens=int(input_tokens),
+                             output_tokens=int(output_tokens), errored=sample.error is not None))
     return obs
 
 

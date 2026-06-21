@@ -16,6 +16,8 @@ def test_load_dataset_puts_qa_in_metadata():
     assert len(samples) == 3
     assert "expected_facts" in samples[0].metadata
     assert "context" in samples[0].metadata
+    assert "question" in samples[0].metadata
+    assert "category" in samples[0].metadata
 
 
 def test_full_loop_with_mock_candidate_and_judge(tmp_path, capsys):

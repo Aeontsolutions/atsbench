@@ -29,7 +29,10 @@ def load_dataset(path) -> list[Sample]:
         if not line.strip():
             continue
         rec = json.loads(line)
-        user = USER_TEMPLATE.format(question=rec["question"], context=rec["context"])
+        if rec["category"] == "negative":
+            user = rec["question"]
+        else:
+            user = USER_TEMPLATE.format(question=rec["question"], context=rec["context"])
         samples.append(Sample(
             id=rec["id"], input=user,
             metadata={"question": rec["question"], "context": rec["context"],

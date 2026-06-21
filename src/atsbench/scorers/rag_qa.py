@@ -71,7 +71,8 @@ def rag_qa_judge(judge_model: "str | Model" = DEFAULT_JUDGE):
         judge = parse_judge_output(out.completion)
         if judge is None:
             return Score(value=0.0, answer=state.output.completion[:200],
-                         metadata={"judge_ok": False})
+                         metadata={"judge_ok": False, "groundedness": None,
+                                   "goal_completion": None, "facts_satisfied": None})
         return Score(
             value=facts_fraction(judge),
             answer=state.output.completion[:200],
