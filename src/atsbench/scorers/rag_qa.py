@@ -6,7 +6,7 @@ from inspect_ai.model import Model, get_model
 from inspect_ai.scorer import Score, Target, mean, scorer, stderr
 from inspect_ai.solver import TaskState
 
-DEFAULT_JUDGE = "openrouter/anthropic/claude-3.7-sonnet"  # neutral; confirm slug at openrouter.ai/models
+DEFAULT_JUDGE = "openrouter/anthropic/claude-sonnet-4.6"  # neutral judge ($3/$15 per M, verified on OpenRouter 2026-06-21)
 
 JUDGE_TEMPLATE = """You are an expert evaluator of a financial chatbot's single answer.
 
