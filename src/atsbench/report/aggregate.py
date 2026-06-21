@@ -58,11 +58,17 @@ def samples_from_log(log) -> list[SampleObs]:
 
 
 def accuracy_from_log(log) -> float:
-    """Read the 'accuracy' metric from the first scorer in log.results."""
+    """Headline accuracy: prefer an 'accuracy' metric, then 'mean', then the
+    first metric on the first scorer. Float-valued scorers (e.g. classification's
+    macro per-field accuracy via mean()) surface their headline this way."""
     if log.results is None or not log.results.scores:
         return 0.0
     for score in log.results.scores:
-        metric = score.metrics.get("accuracy")
-        if metric is not None:
-            return float(metric.value)
+        for key in ("accuracy", "mean"):
+            metric = score.metrics.get(key)
+            if metric is not None:
+                return float(metric.value)
+    first = log.results.scores[0].metrics
+    if first:
+        return float(next(iter(first.values())).value)
     return 0.0
