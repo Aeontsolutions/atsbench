@@ -11,7 +11,7 @@ models:
     price_per_1m_output: 10.0
     trusted: true
   - name: glm-5.2
-    provider: openrouter/z-ai/glm-4.6   # placeholder — confirm exact GLM slug at openrouter.ai/models
+    provider: openrouter/z-ai/glm-5.2   # confirmed from OpenRouter (reasoning model — see run notes)
     price_per_1m_input: 0.60
     price_per_1m_output: 2.20
     trusted: false                # external — keep sensitive fixtures away from it
