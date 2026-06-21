@@ -4,8 +4,12 @@
 - dataset.jsonl sha256: aa130c78af38c01b
 - source: Aeontsolutions/jse-doc-workflows golden_dataset_documents
 - input: first 3 pages text (pypdf); labels derived from filenames
+- symbols: derived from the 99 dataset filenames — the production JSE symbol source is a DynamoDB table needing AWS credentials, not reachable at build time. All symbols present in this dataset are captured; the official list may hold additional instruments. Known artifact: Kintyre Holdings appears as both KYNTR (used in the dataset) and KNTYR (an excluded file); both are in the prompt's symbol reference.
 
 ## Excluded (29)
+
+_All 29 exclusions are scanned/image PDFs with no extractable text in the first 3 pages — classifiable only via OCR/multimodal input, which is out of scope for this text-input benchmark (v1)._
+
 - amg_packaging_&_paper_company_limited-AMG-unaudited_financial_statements_31-may-2015.pdf (no extractable text in first 3 pages)
 - amg_packaging_&_paper_company_limited-AMG-unaudited_financial_statements_31-may-2019.pdf (no extractable text in first 3 pages)
 - atlantic_hardware_and_plumbing_company_limited-AHPC-audited_financial_statements_31-december-2024.pdf (no extractable text in first 3 pages)
