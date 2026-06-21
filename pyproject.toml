@@ -5,6 +5,7 @@ description = "Benchmark any LLM against Aeontsolutions' real workflows on three
 requires-python = ">=3.11"
 dependencies = [
     "inspect-ai>=0.3.50",
+    "openai>=1.0",
     "pydantic>=2.6",
     "pypdf>=4.0",
     "pyyaml>=6.0",
