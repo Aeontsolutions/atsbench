@@ -1,13 +1,17 @@
 # The registry you edit to add a model. provider = Inspect model string.
-# OpenAI-compatible endpoints: openai-api/<vendor>/<model> + <VENDOR>_API_KEY and <VENDOR>_BASE_URL env vars.
+# Models route through OpenRouter (one OPENROUTER_API_KEY, no base URL): provider = openrouter/<slug>.
+# For fair A/B runs, pin the backend + forbid quantization, e.g.:
+#   -M provider='{"order":["z-ai"],"allow_fallbacks":false,"quantizations":["fp16","bf16"]}'
+# Cost = the prices below x token counts (independent of the serving path) — set them to the pricing
+# you're modeling and confirm against openrouter.ai/models.
 models:
   - name: gemini-2.5-pro          # current incumbent — benchmarked first to set the baseline
-    provider: google/gemini-2.5-pro
+    provider: openrouter/google/gemini-2.5-pro
     price_per_1m_input: 1.25
     price_per_1m_output: 10.0
     trusted: true
   - name: glm-5.2
-    provider: openai-api/zhipu/glm-5.2
+    provider: openrouter/z-ai/glm-4.6   # placeholder — confirm exact GLM slug at openrouter.ai/models
     price_per_1m_input: 0.60
     price_per_1m_output: 2.20
     trusted: false                # external — keep sensitive fixtures away from it
