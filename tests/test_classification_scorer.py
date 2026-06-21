@@ -1,4 +1,4 @@
-from atsbench.scorers.classification import normalize_company_name, score_fields
+from atsbench.scorers.classification import company_match, normalize_company_name, score_fields
 
 GOLD = {
     "is_financial": True, "document_type": "audited_financial_statements",
@@ -49,3 +49,21 @@ def test_year_not_scored_for_non_financial():
 def test_year_is_string_exact():
     assert score_fields(dict(GOLD, year=2023), GOLD)["per_field"]["year"] is True   # 2023 -> "2023"
     assert score_fields(dict(GOLD, year="2022"), GOLD)["per_field"]["year"] is False
+
+
+def test_company_match_lenient_on_filename_golden():
+    # filename-derived golden abbreviates/adds cruft; models return the real legal name.
+    assert company_match("caribbean cement company ltd", "Caribbean Cement Company Limited")
+    assert company_match("general accident insurance company (ja) limited",
+                         "General Accident Insurance Company (Jamaica) Limited")
+    assert company_match("first rock capital holdings limited (jmd)",
+                         "First Rock Capital Holdings Limited")
+    assert company_match("sagicor select funds limited financial", "Sagicor Select Funds Limited")
+    assert company_match("spur spices jamaica limited", "Spur Tree Spices Jamaica Limited")
+    assert company_match("main event entertainment group", "Main Event Entertainment Group Limited")
+
+
+def test_company_match_rejects_real_differences():
+    assert not company_match("mayberry group ltd", "Mayberry Investments Limited")  # different entity
+    assert not company_match("barita investments limited", "NCB Financial Group Limited")
+    assert not company_match("Sagicor Select Funds Limited", "Sagicor")  # 1-token subset too weak

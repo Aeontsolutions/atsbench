@@ -18,9 +18,38 @@ def normalize_company_name(name: str | None) -> str:
     return n.strip()
 
 
+_LEGAL_SUFFIXES = {
+    "ltd", "limited", "plc", "inc", "incorporated", "corp", "corporation",
+    "co", "company", "llc", "lp",
+}
+
+
+def _company_tokens(name: str | None) -> set[str]:
+    """Distinctive company tokens: lowercase, &->and, strip parentheticals,
+    legal-form suffixes (ltd/limited/company/...), and a leading 'the'."""
+    if not name:
+        return set()
+    n = str(name).lower().replace("&", "and")
+    n = re.sub(r"\([^)]*\)", " ", n)
+    n = re.sub(r"[^a-z0-9\s]", " ", n)
+    return {t for t in n.split() if t and t != "the" and t not in _LEGAL_SUFFIXES}
+
+
+def company_match(gold: str | None, pred: str | None) -> bool:
+    """Lenient match for filename-derived company labels: ignores Ltd/Limited and
+    parenthetical/cruft differences. The filename golden often abbreviates or carries
+    extra tokens, so a >=2-token subset on either side counts as a match."""
+    g, p = _company_tokens(gold), _company_tokens(pred)
+    if not g or not p:
+        return g == p
+    if g == p:
+        return True
+    return (g <= p or p <= g) and min(len(g), len(p)) >= 2
+
+
 def _field_correct(field: str, gold, pred) -> bool:
     if field == "company":
-        return normalize_company_name(gold) == normalize_company_name(pred)
+        return company_match(gold, pred)
     if field == "symbol":
         return pred is not None and str(gold).upper() == str(pred).upper()
     if field in ("year",):
