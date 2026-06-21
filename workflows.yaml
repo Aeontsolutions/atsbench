@@ -3,7 +3,9 @@ workflows:
     gate:
       min_accuracy: 0.5
       primary_axis: cost
-  - name: classification
+  - name: classification          # gate anchored to the Gemini 2.5 Pro baseline (2026-06-21)
     gate:
-      min_accuracy: 0.7
+      min_accuracy: 0.90           # incumbent 0.948 − ~2σ (stderr 0.025); a candidate must roughly match Gemini
+      max_latency_s: 45.0          # ~Gemini p95 (41.2s) + headroom
+      max_cost_per_sample_usd: 0.03  # ~Gemini $/doc ($0.024) + headroom
       primary_axis: cost
