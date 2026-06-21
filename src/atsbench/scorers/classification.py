@@ -35,6 +35,11 @@ def score_fields(pred: dict, gold: dict) -> dict:
     for field in _FIELDS:
         if gold.get(field) is None:
             continue
+        # year is only well-defined for financial statements; the production
+        # prompt forbids using the filing/publication date, so we do not score
+        # year on non-financial docs (whose filename-derived year IS the filing date).
+        if field == "year" and gold.get("is_financial") is False:
+            continue
         per_field[field] = _field_correct(field, gold.get(field), pred.get(field))
     scored = len(per_field)
     correct = sum(1 for v in per_field.values() if v)

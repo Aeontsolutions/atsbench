@@ -17,6 +17,15 @@ def test_load_dataset_reads_records():
     assert samples[0].metadata["golden"]["symbol"] == "BIL"
 
 
+def test_real_dataset_loads_cleanly():
+    samples = load_dataset(ROOT / "fixtures" / "classification" / "dataset.jsonl")
+    assert len(samples) == 70
+    for s in samples:
+        g = s.metadata["golden"]
+        assert set(g) == {"is_financial", "document_type", "company", "symbol", "year", "audited"}
+        assert isinstance(g["year"], str)
+
+
 def test_full_loop_with_mock_model(tmp_path, capsys):
     # Mock returns the exactly-correct classification JSON for each of the 3 docs,
     # so the model scores 1.0 and passes the gate — exercises the success path.

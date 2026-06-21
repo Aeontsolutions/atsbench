@@ -28,11 +28,22 @@ def test_one_wrong_field():
 
 
 def test_null_gold_field_is_skipped():
+    # audited (None) and year (non-FS) are both excluded, so only 4 fields scored
     gold = dict(GOLD, document_type="annual_report", is_financial=False, audited=None)
     pred = dict(gold, audited=False)  # model guessed audited but gold is null -> not scored
     r = score_fields(pred, gold)
-    assert r["scored"] == 5            # audited excluded
+    assert r["scored"] == 4            # audited (None) and year (non-FS) excluded
     assert "audited" not in r["per_field"]
+    assert "year" not in r["per_field"]
+
+
+def test_year_not_scored_for_non_financial():
+    gold = {"is_financial": False, "document_type": "annual_report",
+            "company": "x ltd", "symbol": "X", "year": "2022", "audited": None}
+    pred = dict(gold, year="1999")  # wrong filing year, but must NOT be scored for non-FS
+    r = score_fields(pred, gold)
+    assert "year" not in r["per_field"]
+    assert r["correct"] == r["scored"]  # the 4 scored fields all match
 
 
 def test_year_is_string_exact():
