@@ -65,9 +65,9 @@ Negative records carry an out-of-scope `question`, an empty/irrelevant `context`
 ## Scoring
 
 - **Headline (gate axis) = factfulness fraction** = mean over fixtures of `(#expected_facts satisfied / #expected_facts)`, via Inspect's `mean()` metric (the aggregator already reads `accuracy`→`mean`).
-- **Secondary:** mean groundedness (1–5) and mean goal_completion (1–5), surfaced in metadata; a low-groundedness/high-factfulness answer is flagged (hallucinated-but-lucky).
-- **Judge failure** (judge output unparseable) → that sample flagged `judge_ok=False` and excluded-or-zeroed (counted, never silently dropped); surfaced in the report.
-- Cost/latency/token axes come from the slice-① aggregator — note these reflect the **candidate's** generation only; the judge's own tokens are tracked separately and reported as judging overhead, not charged to the candidate.
+- **Secondary:** groundedness (1–5) and goal_completion (1–5) are captured **per-sample in the Inspect logs** (Score metadata), **not yet in the scorecard** (v1). So spotting a low-groundedness/high-factfulness answer (hallucinated-but-lucky) requires inspecting the logs / Inspect View; surfacing them as scorecard columns is deferred. Groundedness is ill-posed for the negative (decline) cases — ignore it there.
+- **Judge failure** (judge output unparseable) → that sample flagged `judge_ok=False` and scored 0 (counted, never silently dropped).
+- Cost/latency/token axes come from the slice-① aggregator and reflect the **candidate's generation only** — `samples_from_log` filters `model_usage` to the candidate model, so the judge's tokens are **not** charged to the candidate. (A separate judging-overhead report column is deferred.)
 
 ## Error handling & robustness
 
