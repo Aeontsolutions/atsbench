@@ -9,7 +9,9 @@ from inspect_ai.solver import generate, system_message
 
 from atsbench.scorers.classification import classification
 
-_PROMPT_PATH = Path(__file__).resolve().parent.parent.parent.parent / "fixtures" / "classification" / "system_prompt.txt"
+_FIXTURES = Path(__file__).resolve().parent.parent.parent.parent / "fixtures" / "classification"
+_PROMPT_PATH = _FIXTURES / "system_prompt.txt"
+_DEFAULT_DATASET = _FIXTURES / "dataset.jsonl"
 
 USER_TEMPLATE = (
     'Please analyze and classify this document named "{filename}".\n\n'
@@ -33,9 +35,9 @@ def load_dataset(path: str | Path) -> list[Sample]:
 
 
 @task
-def classification_task(dataset_path: str = "fixtures/classification/dataset.jsonl") -> Task:
+def classification_task(dataset_path: str | Path | None = None) -> Task:
     return Task(
-        dataset=load_dataset(dataset_path),
+        dataset=load_dataset(dataset_path or _DEFAULT_DATASET),
         solver=[system_message(_system_prompt()), generate()],
         scorer=classification(),
     )
