@@ -9,3 +9,7 @@ workflows:
       max_latency_s: 45.0          # ~Gemini p95 (41.2s) + headroom
       max_cost_per_sample_usd: 0.03  # ~Gemini $/doc ($0.024) + headroom
       primary_axis: cost
+  - name: rag_qa
+    gate:
+      min_accuracy: 0.7          # factfulness floor; re-anchor to the Gemini baseline after the first run
+      primary_axis: cost
