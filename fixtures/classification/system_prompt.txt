@@ -40,6 +40,71 @@ Please analyze the entire document including any financial statements, tables, c
 CRITICAL: The "symbol" field MUST be one of the official JSE symbols below. Do NOT invent symbols or use the company name as the symbol. If uncertain, use the best match from this list.
 
 OFFICIAL JSE INSTRUMENT SYMBOLS (use the symbol ID on the left as the "symbol" value):
-{_INSTRUMENT_SYMBOL_REFERENCE}
+138SL — 138 Student Living Jamaica Limited
+1834 — 1834 Investments Limited
+1GS — One Great Studio Company Limited
+AFS — Access Financial Services Limited
+AHPC — Atlantic Hardware and Plumbing Company Limited
+AMG — AMG Packaging & Paper Company Limited
+BIL — Barita Investments Limited
+BPOW — Blue Power Group Limited
+CABROKERS — Caribbean Assurance Brokers Limited
+CAR — Carreras Limited
+CCC — Caribbean Cement Company Ltd.
+CHL — Cargo Handlers Limited
+CPFV — Eppley Caribbean Property Fund Limited SCC
+CPJ — Caribbean Producers Jamaica Limited
+CWJ — Cable & Wireless Jamaica Limited
+CWJDEFERREDA — Community & Workers of Jamaica CCU Deferred Share
+DCOVE — Dolphin Cove Limited
+DOLLA — Dolla Financial Services Limited
+EFRESH — Everything Fresh Limited
+EPLY — Eppley Limited
+FIRSTROCKJMD — First Rock Capital Holdings Limited (JMD)
+GENAC — General Accident Insurance Company (Ja) Limited
+GK — GraceKennedy Limited
+HONBUN — Honey Bun (1982) Limited
+INDIES — Indies Pharma Jamaica Limited
+JBG — Jamaica Broilers Group
+JETCON — Jetcon Corporation Limited
+JMMBGL — JMMB Group Limited
+JP — Jamaica Producers Group Ltd.
+KEX — Knutsford Express Services Limited
+KEY — Key Insurance Company Limited
+KNTYR — Kintyre Holdings (Ja) Limited
+KREMI — Caribbean Cream Limited
+KW — Kingston Wharves Limited
+KYNTR — Kintyre Holdings (Ja) Limited
+LAB — Limners and Bards Limited
+LASD — Lasco Distributors Limited
+LASF — Lasco Financial Services Limited
+LASM — Lasco Manufacturing Limited
+MAILPAC — Mailpac Group Limited
+MEEG — Main Event Entertainment Group
+MGL — Mayberry Group Ltd.
+MIL — Mayberry Investments Limited
+MJE — Mayberry Jamaican Equities Limited
+MPCCEL — MPC Caribbean Clean Energy Limited
+MTL — Margaritaville (Turks) Limited
+NCBFG — NCB Financial Group Limited
+ONE — One on One Educational Services Limited
+PAL — Palace Amusement Co. Ltd.
+PBS — Productive Business Solutions Limited
+PJAM — PanJam Investment Limited
+PJX — Portland JSX Limited
+PURITY — Consolidated Bakeries (Jamaica) Limited
+QWI — QWI Investments Limited
+ROC — IronRock Insurance Company Limited
+SALF — Salada Foods Jamaica Ltd.
+SELECTF — Sagicor Select Funds Limited Financial
+SEP — Seprod Limited
+SGJ — Scotia Group Jamaica Limited
+SIL — Sterling Investments Limited
+SOS — Stationery and Office Supplies Limited
+SPURTREE — Spur Spices Jamaica Limited
+TROPICAL — Tropical Battery Company Limited
+TTECH — TTECH Limited
+WIG — Wigton Energy Limited
+XFUND — Sagicor Real Estate X Fund Limited
 
 CRITICAL: Respond ONLY with valid JSON. Do not include any explanatory text, comments, or additional information outside the JSON structure.
