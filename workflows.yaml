@@ -3,3 +3,7 @@ workflows:
     gate:
       min_accuracy: 0.5
       primary_axis: cost
+  - name: classification
+    gate:
+      min_accuracy: 0.7
+      primary_axis: cost
