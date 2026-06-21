@@ -101,3 +101,23 @@ def test_unparseable_returns_none():
 def test_all_types_are_canonical():
     lab = parse_filename("eppley_limited_eply-_general_meetings_2018-05-04.pdf", {"EPLY"})
     assert lab.document_type in DOCUMENT_TYPES
+
+
+def test_year_in_prefix_day_only_in_suffix():
+    lab = parse_filename("acme_2019_holdings-ACME-audited_financial_statements_september-30.pdf", {"ACME"})
+    assert lab.year == "2019"
+
+
+def test_short_token_not_matched_inside_word():
+    lab = parse_filename("navigator_holdings-NAVH-annual_report_2019.pdf", {"NAVH"})
+    assert lab.document_type == "annual_report"
+
+
+def test_nav_matches_when_delimiter_bounded():
+    lab = parse_filename("qwi_investments_limited_qwi_nav_2022-12-09.pdf", {"QWI"})
+    assert lab.document_type == "nav"
+
+
+def test_company_starting_with_jse_is_not_jse_level():
+    lab = parse_filename("jseg_holdings_limited-JSEG-annual_report_2022.pdf", {"JSEG"})
+    assert lab.company is not None and lab.symbol == "JSEG"

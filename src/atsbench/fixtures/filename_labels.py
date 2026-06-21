@@ -66,20 +66,34 @@ def _find_year(suffix: str) -> str | None:
     return None
 
 
+def _match_token(lower: str) -> tuple[str, int] | None:
+    """Longest type-token that appears delimiter-bounded; returns (token, start_index)."""
+    for tok in _TYPE_TOKENS_BY_LEN:
+        m = re.search(r"(?:^|[-_])(" + re.escape(tok) + r")(?:$|[-_])", lower)
+        if m:
+            return tok, m.start(1)
+    return None
+
+
 def parse_filename(filename: str, known_symbols: set[str]) -> Labels | None:
     stem = filename[:-4] if filename.lower().endswith(".pdf") else filename
     lower = stem.lower()
 
-    token = next((t for t in _TYPE_TOKENS_BY_LEN if t in lower), None)
-    if token is None:
+    matched = _match_token(lower)
+    if matched is None:
         return None
+    token, start = matched
     doc_type = _TYPE_MAP[token]
 
-    start = lower.index(token)
     prefix = stem[:start].strip(" -_")
     suffix = stem[start + len(token):]
 
-    year = _find_year(suffix) or _find_year(prefix)
+    if re.search(r"(?:19|20)\d{2}", suffix):
+        year = _find_year(suffix)
+    elif re.search(r"(?:19|20)\d{2}", prefix):
+        year = _find_year(prefix)
+    else:
+        year = _find_year(suffix) or _find_year(prefix)
     if year is None:
         return None
 
@@ -87,7 +101,7 @@ def parse_filename(filename: str, known_symbols: set[str]) -> Labels | None:
     audited = True if doc_type == _AUDITED_TYPE else (False if doc_type == _UNAUDITED_TYPE else None)
 
     # JSE-level documents have no company/symbol.
-    if prefix.lower().startswith("jse"):
+    if re.match(r"jse(?:[-_ ]|$)", prefix.lower()):
         return Labels(None, None, doc_type, year, is_financial, audited)
 
     tokens = [t for t in re.split(r"[-_]", prefix) if t]
