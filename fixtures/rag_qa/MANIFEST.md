@@ -4,16 +4,23 @@
 - workflow: rag_qa (financial path, frozen single-turn isolated generation)
 - input per record: `{question, context, expected_facts[], category}`
 
-## ⚠️ DRAFT — figures need Elroy's verification
+## ✓ Verified (2026-06-21)
 
-The J$ figures in `context` are **illustrative drafts**, not pulled from real statements.
-They are internally coherent (each record's `expected_facts` is answerable from its
-`context`, and YoY/percentage claims match the numbers), so the benchmark is *valid* as
-written — it tests whether a model faithfully uses the provided context. **But before this
-becomes authoritative ground truth, replace/verify the figures with real JSE data** (from
-the financial statements or BigQuery). A wrong figure here silently penalizes every model.
+Figures were **fact-checked against public sources** (company results releases, Mayberry,
+the Gleaner, JSE filings) — see [`dataset_factcheck.md`](dataset_factcheck.md) for the
+row-by-row sources. The original draft figures were synthetic and mostly wrong; corrections:
 
-Companies referenced (real JSE symbols): NCBFG, GK, JBG, SGJ, CAR, WIG, JMMBGL.
+- **NCBFG** revenue rows reframed to **net operating income** — J$137.26bn FY2023 vs
+  J$145.31bn FY2022, so it **fell ~6%** (the draft had the direction reversed).
+- **NCBFG income mix:** NII ~J$62.8bn < non-interest ~J$74.5bn — non-interest is the larger
+  contributor (the draft conclusion was flipped).
+- Corrected to reported figures: **JBG** (~57 / 75.7 / 91.4bn), **SGJ EPS** (J$5.54),
+  **Carreras** (~J$4.7bn vs ~J$3.8bn), **SGJ NOI** (~J$53bn), **GK group PAT** (J$8.4bn).
+- **Fiscal period-ends added** to each context (NCBFG 30-Sep, GK 31-Dec, JBG ~Apr, SGJ
+  31-Oct, JMMB 31-Mar, WIG 31-Mar, CAR 31-Mar) since fiscal years differ.
+
+Some figures are approximate (`~`); the `expected_facts` are phrased with tolerance so the
+judge accepts close answers. Companies (real JSE symbols): NCBFG, GK, JBG, SGJ, CAR, WIG, JMMBGL.
 
 ## Validity rule
 
