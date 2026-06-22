@@ -17,6 +17,12 @@ uv sync
 source .venv/bin/activate
 ```
 
+Install the Claude skill (one-time, per developer) so Claude Code can assist with running evals:
+
+```bash
+mkdir -p ~/.claude/skills && ln -s "$PWD/.claude/skills/atsbench" ~/.claude/skills/atsbench
+```
+
 Copy `.env.example` to `.env` and set your key:
 
 ```bash
